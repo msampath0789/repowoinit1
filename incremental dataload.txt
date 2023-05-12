@@ -1,0 +1,64 @@
+steps for incremental data
+
+
+lookup1(Lkp_old_wmk)
+========================
+
+in settings==>query
+====================
+SELECT TABLENAME, WATERMARK_DATE FROM dbo.dest_watermark_table WHERE tablename='Destination_cust_table_order'
+
+
+lookup 2(Lkp_new_wmk)
+========================
+
+in settings==>query
+===================
+
+SELECT MAX(Insert_date) AS NEWWMKVALUE FROM dbo.source_cust_table_order
+
+
+in copy activity
+==================
+
+source===> query
+================
+click add dynamic
+================
+select Order_Id,Product_Name,Amount,Insert_date FROM dbo.source_cust_table_order 
+where insert_date>'@{activity('LKP_OLD_WMK_VALUE').output.firstRow.watermark_date}'
+and Insert_date<='@{activity('LKP_NEW_WMK_VALUE').output.firstrow.NEWWMKVALUE}'
+-------------------------------------------
+sink==>provide destination table
+
+and check 
+
+mapping colums
+
+
+==================
+
+add stored procedure(SP_wmk)
+===============================
+click import schema to provide values 
+
+name         value
+======      =======
+                 
+newtime  ===>   @activity('LKP_NEW_WMK_VALUE').output.FirstRow.NEWWMKVALUE
+
+
+tablename====>  @activity('LKP_OLD_WMK_VALUE').output.FirstRow.tablename
+                                                                           
+
+
+
+
+
+
+
+
+
+
+
+
